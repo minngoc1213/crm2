@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: espocrm-deployment
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: espocrm
+  template:
+    metadata:
+      labels:
+        app: espocrm
+    spec:
+      containers:
+      - name: espocrm
+        image: gcr.io/PROJECT_ID/IMAGE
+        ports:
+        - containerPort: 80
+        volumeMounts:
+        - name: espocrm-data
+          mountPath: /var/www/html/data
+        - name: espocrm-custom
+          mountPath: /var/www/html/custom
+        - name: espocrm-config
+          mountPath: /var/www/html/config.php
+          subPath: config.php
+        env:
+        - name: MYSQL_HOST
+          valueFrom:
+            secretKeyRef:
+              name: espocrm-secrets
+              key: mysql-host
+        - name: MYSQL_DATABASE
+          valueFrom:
+            secretKeyRef:
+              name: espocrm-secrets
+              key: mysql-database
+        - name: MYSQL_USER
+          valueFrom:
+            secretKeyRef:
+              name: espocrm-secrets
+              key: mysql-user
+        - name: MYSQL_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: espocrm-secrets
+              key: mysql-password
+      volumes:
+      - name: espocrm-data
+        persistentVolumeClaim:
+          claimName: espocrm-data-pvc
+      - name: espocrm-custom
+        persistentVolumeClaim:
+          claimName: espocrm-custom-pvc
+      - name: espocrm-config
+        configMap:
+          name: espocrm-config

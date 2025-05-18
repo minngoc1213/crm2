@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cloudsql-proxy
+spec:
+  selector:
+    matchLabels:
+      app: cloudsql-proxy
+  template:
+    metadata:
+      labels:
+        app: cloudsql-proxy
+    spec:
+      containers:
+      - name: cloudsql-proxy
+        image: gcr.io/cloudsql-docker/gce-proxy:1.27.0
+        command:
+          - "/cloud_sql_proxy"
+          - "-instances=YOUR_PROJECT:YOUR_REGION:YOUR_SQL_INSTANCE_NAME=tcp:3306"
+        securityContext:
+          runAsNonRoot: true
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cloudsql-proxy
+spec:
+  selector:
+    app: cloudsql-proxy
+  ports:
+  - port: 3306
